@@ -71,5 +71,14 @@ namespace EventScheduler.Controllers
             if (!deleted) return NotFound(new { error = "Classification not found" });
             return NoContent();
         }
+        // PUT /api/classification/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] ClassificationCreateDto dto)
+        {
+            var updated = await _service.UpdateClassificationAsync(id, dto.Name);
+            if (updated == null)
+                return NotFound(new { error = "Classification not found" });
+            return Ok(updated);
+        }
     }
 }

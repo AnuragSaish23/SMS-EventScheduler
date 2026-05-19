@@ -308,6 +308,26 @@ namespace EventScheduler.Services
 
             return rowsAffected > 0;
         }
+        public async Task<ClassificationResponseDto?> UpdateClassificationAsync(int id, string newName)
+        {
+            var entity = await _context.Classifications
+                .FromSqlInterpolated($@"SELECT * FROM ""Classifications"" WHERE ""Id"" = {id}")
+                .FirstOrDefaultAsync();
+
+            if (entity == null) return null;
+
+            await _context.Database.ExecuteSqlInterpolatedAsync(
+                $@"UPDATE ""Classifications"" SET ""Name"" = {newName} WHERE ""Id"" = {id}");
+
+            return new ClassificationResponseDto
+            {
+                Id = entity.Id,
+                Name = newName,
+                ParentId = entity.ParentId,
+                Level = entity.Level,
+                CreatedAt = entity.CreatedAt
+            };
+        }
 
     }
 }

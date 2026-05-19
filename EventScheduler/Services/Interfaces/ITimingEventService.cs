@@ -23,5 +23,7 @@ namespace EventScheduler.Services.Interfaces
         Task<ClassificationResponseDto?> GetClassificationByIdAsync(int id);
         Task<ClassificationResponseDto> AddClassificationAsync(ClassificationCreateDto dto);
         Task<bool> DeleteClassificationAsync(int classificationId);
+        Task<ClassificationResponseDto?> UpdateClassificationAsync(int id, string newName);
+
     }
 }
