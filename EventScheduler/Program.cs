@@ -28,6 +28,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Register services
 builder.Services.AddScoped<ITimingEventService, TimingEventService>();
 builder.Services.AddSingleton<ISignalProcessingEngine, SignalProcessingEngine>();
+builder.Services.AddHostedService<OpcUaClientService>();
 
 var app = builder.Build();
 
