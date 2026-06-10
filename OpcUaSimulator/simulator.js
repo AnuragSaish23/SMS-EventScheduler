@@ -1,5 +1,8 @@
 const { OPCUAServer, Variant, DataType } = require("node-opcua");
 
+// Configurable via environment variable (default: 3 seconds)
+const SIGNAL_INTERVAL_MS = parseInt(process.env.SIGNAL_INTERVAL_MS || "3000", 10);
+
 async function main() {
     const server = new OPCUAServer({
         port: 4840,
@@ -36,7 +39,8 @@ async function main() {
     console.log(`  SMS Factory Simulator is RUNNING`);
     console.log(`  Endpoint: ${server.getEndpointUrl()}`);
     console.log(`========================================\n`);
-    console.log("Sensors will flip randomly every 10-30 seconds...\n");
+    console.log(`Signal interval: ${SIGNAL_INTERVAL_MS}ms (set SIGNAL_INTERVAL_MS to change)`);
+    console.log(`Sensors will flip randomly every ${SIGNAL_INTERVAL_MS/1000}-${SIGNAL_INTERVAL_MS*2/1000}s...\n`);
 
     // Simulation loop: randomly flip sensors
     const simulate = () => {
@@ -59,13 +63,13 @@ async function main() {
             console.log(`[${new Date().toLocaleTimeString()}] ${completeVal ? "⚡ OPERATION COMPLETE signal" : "⏳ Waiting..."} (OperationComplete = ${completeVal})`);
         }
 
-        // Next event in 10-30 seconds
-        const nextDelay = 10000 + Math.floor(Math.random() * 20000);
+        // Next event in INTERVAL to 2*INTERVAL ms
+        const nextDelay = SIGNAL_INTERVAL_MS + Math.floor(Math.random() * SIGNAL_INTERVAL_MS);
         setTimeout(simulate, nextDelay);
     };
 
-    // Start after 5 seconds
-    setTimeout(simulate, 5000);
+    // Start after 2 seconds
+    setTimeout(simulate, 2000);
 }
 
 main().catch(console.error);

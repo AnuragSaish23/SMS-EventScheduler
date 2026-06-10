@@ -17,12 +17,16 @@ namespace EventScheduler.Services
         private string _triggerSignalId = string.Empty;
         private int? _classificationId = null;
 
+        private readonly IInfluxDbService _influxDb;
+
         public SignalProcessingEngine(
             IServiceScopeFactory scopeFactory,
-            ILogger<SignalProcessingEngine> logger)
+            ILogger<SignalProcessingEngine> logger,
+            IInfluxDbService influxDb)
         {
             _scopeFactory = scopeFactory;
             _logger = logger;
+            _influxDb = influxDb;
         }
 
         public List<SignalProcessingResultDto> ProcessSignals(List<SignalDataDto> signals)
@@ -241,7 +245,12 @@ namespace EventScheduler.Services
                 QualityFlag = value.QualityFlag,
                 ReceivedAt = DateTime.UtcNow
             };
+
+            // PostgreSQL write
             service.LogRawSignalAsync(log).Wait();
+
+            // NEW: InfluxDB write
+            _influxDb.WriteRawSignalAsync(log).Wait();
         }
 
         // Helper: Save timing event to database
@@ -249,8 +258,12 @@ namespace EventScheduler.Services
         {
             using var scope = _scopeFactory.CreateScope();
             var service = scope.ServiceProvider.GetRequiredService<ITimingEventService>();
+
+            // PostgreSQL write
             service.SaveTimingEventAsync(timingEvent).Wait();
 
+            // NEW: InfluxDB write
+            _influxDb.WriteTimingEventAsync(timingEvent).Wait();
         }
         // Helper: Get classification ID from signal config
         private int? GetClassificationId(string signalId)

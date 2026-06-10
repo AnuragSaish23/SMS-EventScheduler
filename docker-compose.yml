@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: EventSchedulerDb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  influxdb:
+    image: influxdb:2.7-alpine
+    ports:
+      - "8086:8086"
+    environment:
+      DOCKER_INFLUXDB_INIT_MODE: setup
+      DOCKER_INFLUXDB_INIT_USERNAME: admin
+      DOCKER_INFLUXDB_INIT_PASSWORD: adminpassword
+      DOCKER_INFLUXDB_INIT_ORG: sms-group
+      DOCKER_INFLUXDB_INIT_BUCKET: factory-signals
+      DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: sms-cmms-dev-token
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+
+  opcua-simulator:
+    build: 
+      context: ./OpcUaSimulator
+    ports:
+      - "4840:4840"
+    environment:
+      - SIGNAL_INTERVAL_MS=3000
+
+  backend:
+    build: 
+      context: ./EventScheduler
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_HTTP_PORTS=5032
+    ports:
+      - "5032:5032"
+    depends_on:
+      - postgres
+      - influxdb
+      - opcua-simulator
+
+volumes:
+  postgres_data:
+  influxdb_data:
